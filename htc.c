@@ -139,7 +139,15 @@ int run_vm()
 		// 这里还有点坑啊 是“=”不是“==”   这个应该是pc是个头 然后后面是一体的一个表达式
 		else if (op == JZ) { pc = ax ? pc + 1 : (int*)*pc; } // jump to address if ax is zero
 		else if (op == JNZ) { pc = ax ? (int*)*pc : pc + 1; }
-		else if (op == CALL) { pc = (int*)ax}		
+		 // call function: push pc + 1 to stack & pc jump to func addr(pc point to)
+        else if (op == CALL)    {*--sp = (int)(pc+1); pc = (int*)*pc;}
+		// new stack frame for vars: save bp, bp -> caller stack, stack add frame
+        else if (op == NVAR)    {*--sp = (int)bp; bp = sp; sp = sp - *pc++;}
+        // delete stack frame for args: same as x86 : add esp, <size>
+        else if (op == DARG)    sp = sp + *pc++;
+        // return caller: retore stack, retore old bp, pc point to caller code addr(store by CALL) 
+        else if (op == RET)     {sp = bp; bp = (int*)*sp++; pc = (int*)*sp++;}        
+        
 
 
 	}
